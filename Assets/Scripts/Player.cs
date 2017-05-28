@@ -1,4 +1,6 @@
-﻿namespace Assets.Scripts
+﻿using UnityEngine;
+
+namespace Assets.Scripts
 {
     public struct Player
     {
@@ -23,11 +25,21 @@
             KickDown
         }
 
+        public enum LastSwipe
+        {
+            Left,
+            Right,
+            Up,
+            Down
+        }
+
         private bool canAttack;
         private int position;
+        private int timesMoved;
         private Side side;
         private Feet feet;
         private Attack attack;
+        private LastSwipe lastSwipe;
 
         public bool GetCanAttack()
         {
@@ -77,6 +89,26 @@
         public void SetAttack(Attack value)
         {
             attack = value;
+        }
+
+        public LastSwipe GetLastSwipe()
+        {
+            return lastSwipe;
+        }
+
+        public void SetLastSwipe(LastSwipe value)
+        {
+            lastSwipe = value;
+        }
+
+        public int GetTimesMoved()
+        {
+            return timesMoved;
+        }
+
+        public void SetTimesMoved(int value)
+        {
+            timesMoved = value;
         }
     }
 }

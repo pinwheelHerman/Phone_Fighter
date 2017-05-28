@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -12,8 +13,7 @@ public class PlayerMovement : NetworkBehaviour
     public float speed;
     private bool touchingScreen;
     private Vector2 startTouchPos;
-    [SerializeField]
-    public int playerNumber;
+    private int playerNumber;
 
     private readonly Vector2 mXAxis = new Vector2(1, 0);
     private readonly Vector2 mYAxis = new Vector2(0, 1);
@@ -45,14 +45,12 @@ public class PlayerMovement : NetworkBehaviour
 
     void Start()
     {
+        if (!isLocalPlayer) return;
         controller = GetComponent<CharacterController>();
         GameObject.Find("IpAddress").GetComponent<Text>().text = Network.player.ipAddress;
-        GameObject.Find("GameManager").GetComponent<GameManager>().OnPlayerConnected();
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        if (players.Length == 1) playerNumber = 1;
-        else playerNumber = 2;
-        if (playerNumber == 1) gameObject.GetComponent<MeshRenderer>().material.color = Color.cyan;
-        if (playerNumber == 2) gameObject.GetComponent<MeshRenderer>().material.color = Color.yellow;
+        playerNumber = players.Length;
+        GameObject.Find("PlayerNumber").GetComponent<Text>().text = "Player #" + playerNumber;
     }
 
     void Update()
@@ -64,18 +62,13 @@ public class PlayerMovement : NetworkBehaviour
 
         KeyboardControl();
         TouchControl();
-        DisplayGesture();
     }
 
     void KeyboardControl()
     {
-        if (Input.GetKey(KeyCode.D))
+        if (Input.GetKeyDown(KeyCode.A))
         {
-            controller.Move(Vector3.right*speed*Time.deltaTime);
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            controller.Move(Vector3.left*speed*Time.deltaTime);
+            Cmd_OnSwipeLeft();
         }
     }
 
@@ -85,8 +78,7 @@ public class PlayerMovement : NetworkBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             // Record start time and position
-            mStartPosition = new Vector2(Input.mousePosition.x,
-                Input.mousePosition.y);
+            mStartPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
             mSwipeStartTime = Time.time;
         }
 
@@ -95,8 +87,7 @@ public class PlayerMovement : NetworkBehaviour
         {
             float deltaTime = Time.time - mSwipeStartTime;
 
-            Vector2 endPosition = new Vector2(Input.mousePosition.x,
-                Input.mousePosition.y);
+            Vector2 endPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
             Vector2 swipeVector = endPosition - mStartPosition;
 
             float velocity = swipeVector.magnitude/deltaTime;
@@ -114,11 +105,11 @@ public class PlayerMovement : NetworkBehaviour
                 // Detect left and right swipe
                 if (angleOfSwipe < mAngleRange)
                 {
-                    OnSwipeRight();
+                    Cmd_OnSwipeRight();
                 }
                 else if ((180.0f - angleOfSwipe) < mAngleRange)
                 {
-                    OnSwipeLeft();
+                    Cmd_OnSwipeLeft();
                 }
                 else
                 {
@@ -127,11 +118,11 @@ public class PlayerMovement : NetworkBehaviour
                     angleOfSwipe = Mathf.Acos(angleOfSwipe)*Mathf.Rad2Deg;
                     if (angleOfSwipe < mAngleRange)
                     {
-                        OnSwipeTop();
+                        Cmd_OnSwipeTop();
                     }
                     else if ((180.0f - angleOfSwipe) < mAngleRange)
                     {
-                        OnSwipeBottom();
+                        Cmd_OnSwipeBottom();
                     }
                     else
                     {
@@ -142,33 +133,31 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    private void OnSwipeLeft()
+    [Command]
+    private void Cmd_OnSwipeLeft()
     {
         mMessageIndex = 1;
-        Debug.Log(mMessage[mMessageIndex]);
-        GameObject.Find("GameManager").GetComponent<GameManager>().SwipeLeft(playerNumber);
+        GameObject.Find("GameManager").GetComponent<GameManager>().Swipe(playerNumber, "left");
     }
 
-    private void OnSwipeRight()
+    [Command]
+    private void Cmd_OnSwipeRight()
     {
         mMessageIndex = 2;
-        Debug.Log(mMessage[mMessageIndex]);
+        GameObject.Find("GameManager").GetComponent<GameManager>().Swipe(playerNumber, "right");
     }
 
-    private void OnSwipeTop()
+    [Command]
+    private void Cmd_OnSwipeTop()
     {
         mMessageIndex = 3;
-        Debug.Log(mMessage[mMessageIndex]);
+        GameObject.Find("GameManager").GetComponent<GameManager>().Swipe(playerNumber, "up");
     }
 
-    private void OnSwipeBottom()
+    [Command]
+    private void Cmd_OnSwipeBottom()
     {
         mMessageIndex = 4;
-        Debug.Log(mMessage[mMessageIndex]);
-    }
-
-    private void DisplayGesture()
-    {
-        GameObject.Find("Gesture").GetComponent<Text>().text = mMessage[mMessageIndex];
+        GameObject.Find("GameManager").GetComponent<GameManager>().Swipe(playerNumber, "down");
     }
 }
