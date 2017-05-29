@@ -23,8 +23,16 @@ public class GameManager : NetworkBehaviour
 	
 	void Update ()
 	{
+        // just tests
 	    GameObject.Find("p1Swipe").GetComponent<Text>().text = "p1 - " + _player1.GetLastSwipe() + " (" + _player1.GetTimesMoved() + ")";
         GameObject.Find("p2Swipe").GetComponent<Text>().text = "p2 - " + _player2.GetLastSwipe() + " (" + _player2.GetTimesMoved() + ")";
+
+        // this is where the bulk of the gameplay will take place
+        // check to see if the players are in the same square
+
+        // if so, check what the state of their attacks are, and act accordingly
+
+        // if not, check for changes in player state and follow through
     }
 
     private void PlayerReset(int playerNum)
@@ -82,34 +90,6 @@ public class GameManager : NetworkBehaviour
         {
             _player2.SetLastSwipe(lastSwipe);
             _player2.SetTimesMoved(timesMoved);
-        }
-    }
-
-    public void SwipeLeft(int playerNumber)
-    {
-        
-        Debug.Log("Player " + playerNumber + " swiped Left");
-        if (playerNumber == 1)
-            Rpc_SwipeLeft(playerNumber, _player1.GetPosition(), _player1.GetCanAttack(), _player1.GetFeet(), _player1.GetAttack());
-        else Rpc_SwipeLeft(playerNumber, _player2.GetPosition(), _player2.GetCanAttack(), _player2.GetFeet(), _player2.GetAttack());
-    }
-
-    [ClientRpc]
-    private void Rpc_SwipeLeft(int playerNumber, int pos, bool canAt, Player.Feet feet, Player.Attack attack)
-    {
-        if (playerNumber == 1)
-        {
-            _player1.SetAttack(attack);
-            _player1.SetCanAttack(canAt);
-            _player1.SetPosition(pos);
-            _player1.SetFeet(feet);
-        }
-        else
-        {
-            _player2.SetAttack(attack);
-            _player2.SetCanAttack(canAt);
-            _player2.SetPosition(pos);
-            _player2.SetFeet(feet);
         }
     }
 }
